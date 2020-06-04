@@ -1,14 +1,12 @@
 package hw2;
 
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.Queue;
 
 /**
  * Write your solution to this assignment in this class
  */
 public class Algorithms {
-
     /**
      * Write your implementation of the sortQueue algorithm here
      *
@@ -31,23 +29,6 @@ public class Algorithms {
                 queue.add(queue.poll());
             queue.add(min);
         }
-    }
-
-    private static <T extends Comparable<T>> boolean sortElements(T[] item){
-        boolean flag = false;
-        if(item[1].compareTo(item[0])<0){
-            T temp = item[0];
-            item[0]= item[1];
-            item[1]=temp;
-            flag=true;
-        }
-        if(item[2].compareTo(item[1])<0){
-            T temp = item[1];
-            item[1]= item[2];
-            item[2]=temp;
-            flag=true;
-        }
-        return flag;
     }
 
     /**

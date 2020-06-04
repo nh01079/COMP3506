@@ -25,20 +25,20 @@ public class ArrayGrid<T> implements Grid<T> {
 
 	public ArrayGrid(int width, int height) throws IllegalArgumentException {
 	    // TODO: implement the constructor
-		if(width<=0||height<=0)throw new IllegalArgumentException();
+		if(width<=0||height<=0)throw new IllegalArgumentException("Invalid dimension, width and height " +
+				"should be larger than zero");
 		array = (T[][]) new Object[height][width];
 	}
 
 	// TODO: implement all of hw1.Grid's methods here
 	public void add(int x, int y, T element) throws IllegalArgumentException{
-		if(x<0||x>=array[0].length||y<0||y>=array.length)throw new IllegalArgumentException();
+		if(x<0||y<0)throw new IllegalArgumentException("x and y should be non negative");
+		else if(x>=array[0].length||y>=array.length)throw new IllegalArgumentException("x and y should be within array" +
+				" dimension");
 		array[y][x]=element;
 	}
 
-	public T get(int x, int y) throws IndexOutOfBoundsException{
-		if(x<0||x>=array[0].length||y<0||y>=array.length)throw new IndexOutOfBoundsException();
-		return array[y][x];
-	}
+	public T get(int x, int y) throws IndexOutOfBoundsException{return array[y][x];}
 
 	public boolean remove(int x, int y) throws IndexOutOfBoundsException{
 		if (get(x,y)==null) return false;
@@ -51,6 +51,7 @@ public class ArrayGrid<T> implements Grid<T> {
 	}
 
 	public void resize(int newWidth, int newHeight) throws IllegalArgumentException{
+		if(newHeight<=0||newWidth<=0)throw new IllegalArgumentException();
 		if(newHeight<array.length) {
 			for (int i = newHeight; i < array.length; i++) {
 				for (T item : array[i]) {
@@ -66,8 +67,13 @@ public class ArrayGrid<T> implements Grid<T> {
 			}
 		}
 		T[][] temp = (T[][]) new Object[newHeight][newWidth];
-		for(int i=0; i<Math.min(newHeight,array.length);i++){
-			temp[i]=Arrays.copyOf(array[i],newWidth);
+		int row = (newHeight>array.length)? array.length: newHeight;
+		for(int i=0; i<row;i++){
+			int col = (newWidth>array[0].length)? array[0].length: newWidth;
+			for(int j=0; j<col; j++){
+				temp[i][j] = array[i][j];
+			}
+			//temp[i]=Arrays.copyOf(array[i],newWidth);
 		}
 		array=temp;
 	}

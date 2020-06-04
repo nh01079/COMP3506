@@ -56,6 +56,7 @@ public class ArrayGrid1<T> implements Grid<T> {
 
 	public void resize(int newWidth, int newHeight) throws IllegalArgumentException{
 		// time complexity: O(n + m + n*m)
+		if(newHeight<=0||newWidth<=0)throw new IllegalArgumentException();
 		if(newHeight<array.length) {
 			for (int i = newHeight; i < array.length; i++) {
 				if(array[i]==null)continue;
