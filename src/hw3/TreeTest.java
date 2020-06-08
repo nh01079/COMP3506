@@ -3,11 +3,11 @@ package hw3;
 import org.junit.Test;
 
 import java.util.Iterator;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
 public class TreeTest {
-
     @Test(timeout=1000)
     public void testHasNext() {
         BinaryTree<Integer> root = new BinaryTree<>(1);
