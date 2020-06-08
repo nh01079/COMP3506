@@ -5,7 +5,7 @@ import java.util.Stack;
 /**
  * A binary tree, where each node contains at most two children
  * Each root node contains a value and references to its left and right children (if they exist)
- * the customTree class is modified to perform arithmetic computations for single digits(0-9) non negative numbers
+ * the customTree class is modified to perform arithmetic computations
  * i.e. (1+2) * 3
  *      *
  *     /  \
