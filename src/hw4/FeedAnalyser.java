@@ -1,7 +1,6 @@
 package hw4;
 
 import java.util.*;
-import java.util.function.DoubleToIntFunction;
 
 /**
  * Class that implements the social media feed searches
@@ -41,7 +40,6 @@ public class FeedAnalyser {
      * space complexity: O(n)
      */
     public FeedAnalyser(String filename) {
-        //patternMap = new TreeMap<>(idComp);
         Iterator<FeedItem> iter = new Util.FileIterator(filename);
         while (iter.hasNext()) {
             FeedItem item = iter.next();
@@ -75,10 +73,16 @@ public class FeedAnalyser {
      */
     public List<FeedItem> getPostsBetweenDates(String username, Date startDate, Date endDate) {
         List<FeedItem> list = userMap.get(username);
-        int start = Collections.binarySearch(list,new FeedItem(-1,"",startDate,-1,""), dateComp);
-        if(start<0) start = -(start+1); // if not found
-        int end = Collections.binarySearch(list,new FeedItem(-1,"",endDate,-1,""), dateComp);
-        if(end<0) end = -(end+1);
+        int start, end;
+        if(startDate!=null) {
+            if(endDate!=null && startDate.compareTo(endDate)>0) return new ArrayList<>(); // assure that startDate>endDate
+            start = Collections.binarySearch(list, new FeedItem(-1, "", startDate, -1, ""), dateComp);
+            if (start < 0) start = -(start + 1); // if not found
+        }else start = 0;
+        if(endDate!=null) {
+            end = Collections.binarySearch(list, new FeedItem(-1, "", endDate, -1, ""), dateComp);
+            if (end < 0) end = -(end + 1);
+        }else end = list.size();
         return list.subList(Math.min(list.size(),start), Math.min(end, list.size()));
     }
 
@@ -99,8 +103,8 @@ public class FeedAnalyser {
     public FeedItem getPostAfterDate(String username, Date searchDate) {
         List<FeedItem> list = userMap.get(username);
         int index = Collections.binarySearch(list,new FeedItem(-1,"",searchDate,-1,""), dateComp);
-        if(index<0) index = -(index+1);
-        return list.get(index);
+        if(index<0) index = -(index+1); // if no exact match is found
+        return index==list.size() ? null: list.get(index); // return null if no items that meet the criteria can be found
     }
 
     /**
@@ -136,13 +140,16 @@ public class FeedAnalyser {
      * @ensure result != null
      *
      * time complexity(KMP): O( n*(pattern.length()+content.length()))
+     * time complexity(RK): O( n*(pattern.length()-content.length()))
      * space complexity: O(n)
      */
     public List<FeedItem> getPostsWithText(String pattern) {
         List<FeedItem> out = new ArrayList<>();
-        for(FeedItem item: idList)
-            if(kmpContains(item.getContent(),pattern)) out.add(item);
-            //if(item.getContent().contains(pattern)) out.add(item);
+        for(FeedItem item: idList){
+            //if(item.getContent().contains(pattern)) out.add(item);    // baseline
+            //if(kmpContains(item.getContent(),pattern)) out.add(item); // kmp algorithm
+            if(rkContains(item.getContent(),pattern)) out.add(item);    // rk algorithm
+        }
         return out;
     }
 
@@ -155,6 +162,7 @@ public class FeedAnalyser {
      * space complexity O(m)
      */
     private static boolean kmpContains(String text, String pattern){
+        if(pattern.length()>text.length()) return false;
         int[] kmp = new int[pattern.length()];
         for(int i = 0, j=0; i<pattern.length();i++){
             // looking for repeating characters within the pattern
@@ -177,10 +185,59 @@ public class FeedAnalyser {
         return false;
     }
 
+    /**
+     * Rabin-karp algo generates a hashvalue for the pattern and perform a rolling hash match on the text
+     * @param text
+     * @param pattern
+     * @return true if text contains the pattern
+     * worst time complexity O(nm)
+     * expected time complexity O(n-m+1)
+     * space O(m)
+     */
+    private static boolean rkContains(String text, String pattern){
+        if(pattern.length()>text.length()) return false;
+        long pHash = 0;
+        long tHash = 0;
+        int len = pattern.length();
+        for(int i = 0; i<pattern.length(); i++){
+            pHash = simpleHash(pattern.charAt(i), (char)0,pHash,len);
+            tHash = simpleHash(text.charAt(i), (char)0, tHash,len);
+        }
+        for(int index = len; index<text.length()+1; index++){
+            if(pHash==tHash){   // check if it is a match
+                int i;
+                for(i=0; i<len; i++)
+                    if(pattern.charAt(i)!=text.charAt(index-len+i)) break;
+                if(i==len)return true;  // continue to search for next matching hash values
+            }
+            if(index<text.length()) tHash = simpleHash(text.charAt(index),text.charAt(index-len),tHash,len);
+        }
+        return false;
+    }
+
+    /**
+     * Rolling hash function to support searching operations of Rabin-Karp algorithm
+     * @param in character to be added to the hash value
+     * @param out character to be removed from the hash value
+     * @param hash current hash value
+     * @param len length of the pattern to determine the order of
+     * @return modified hash value
+     * time complexity: O(1)
+     */
+    private static long simpleHash(char in, char out, long hash, int len){
+        final int PRIME = 39; // 17 as prime num
+        if(out!=(char)0) hash -= (int)(out) * Math.pow(PRIME,len-1);
+        hash *= PRIME;
+        hash += in;
+        return hash;
+    }
+
+
     public static void main(String[] args) {
         String pattern = "abcd";
         String text = "abcdabcd";
         System.out.println(kmpContains(text,pattern));
         kmpContains(pattern,pattern);
+        System.out.println(rkContains(text,pattern));
     }
 }
